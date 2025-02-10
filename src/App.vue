@@ -5,6 +5,7 @@ import axios from 'axios'
 const list_of_routers = [
   'posts',
   'todos',
+  'users',
   'login',
   'register',
 ]

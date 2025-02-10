@@ -2,103 +2,109 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const todos: any = ref([])
+const posts: any = ref([])
 
 const isEditing = ref<number | null>(null)
 const editedTitle = ref('')
-const editedDescription = ref('')
+const editedContent = ref('')
+const editedUserId = ref<number | null>(null)
 
 const isCreating = ref(false)
 const newTitle = ref('')
-const newDescription = ref('')
+const newContent = ref('')
+const newUserId = ref<number | null>(null)
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const fetchTodos = async () => {
+const fetchPosts = async () => {
   try {
-    const response = await axios.get(`${API_URL}/todos/all`)
+    const response = await axios.get(`${API_URL}/posts/all`)
     if (response.status === 200) {
-      todos.value = response.data
-      console.log('Todos:', todos.value)
+      posts.value = response.data
+      console.log('Posts:', posts.value)
     } else if (response.status === 404) {
-      console.log('No todos found')
+      console.log('No posts found')
     } else {
       console.log('Unexpected response status:', response.status)
     }
   } catch (error) {
-    console.error('Error fetching todos:', error)
+    console.error('Error fetching posts:', error)
   }
 }
 
 onMounted(() => {
-  fetchTodos()
+  fetchPosts()
 })
 
-const createTodo = () => {
+const createPost = () => {
   isCreating.value = true
 }
 
-const saveNewTodo = async () => {
+const saveNewPost = async () => {
   try {
-    const response = await axios.post(`${API_URL}/todos/create`, {
+    const response = await axios.post(`${API_URL}/posts/create`, {
       title: newTitle.value,
-      description: newDescription.value,
+      content: newContent.value,
+      user_id: newUserId.value,
     })
     console.log(response)
     if (response.status === 201) {
-      alert('Todo created successfully')
-      fetchTodos()
+      alert('Post created successfully')
+      fetchPosts()
       newTitle.value = ''
-      newDescription.value = ''
+      newContent.value = ''
+      newUserId.value = null
       isCreating.value = false
     }
   } catch (error: any) {
     if (error.response && error.response.status === 400) {
       alert('All fields are required')
     } else {
-      console.error('Error creating todo:', error)
+      console.error('Error creating post:', error)
     }
   }
 }
 
-const editTodo = (id: any) => {
-  const todo = todos.value.find((todo: any) => todo.id === id)
-  if (todo) {
+const editPost = (id: any) => {
+  const post = posts.value.find((post: any) => post.id === id)
+  if (post) {
     isEditing.value = id
-    editedTitle.value = todo.title
-    editedDescription.value = todo.description
+    editedTitle.value = post.title
+    editedContent.value = post.content
+    editedUserId.value = post.user_id
   }
 }
 
-const saveTodo = async (id: any) => {
+const savePost = async (id: any) => {
   try {
-    const response = await axios.put(`${API_URL}/todos/todo/${id}`, {
+    const response = await axios.put(`${API_URL}/posts/post/${id}`, {
       title: editedTitle.value,
-      description: editedDescription.value,
+      content: editedContent.value,
+      user_id: editedUserId.value,
     })
     if (response.status === 200) {
-      alert('Todo updated successfully')
-      fetchTodos()
+      alert('Post updated successfully')
+      fetchPosts()
       isEditing.value = null
     }
   } catch (error: any) {
     if (error.response && error.response.status === 400) {
       alert('All fields are required')
     } else {
-      console.error('Error updating todo:', error)
+      console.error('Error updating post:', error)
     }
   }
 }
 
-const deleteTodo = async (id: number) => {
+const deletePost = async (id: number) => {
   try {
-    const response = await axios.delete(`${API_URL}/todos/todo/${id}`)
+    const response = await axios.delete(`${API_URL}/posts/post/${id}`)
     if (response.status === 204) {
-      alert('Todo deleted successfully')
-      fetchTodos()
+      alert('Post deleted successfully')
+      fetchPosts()
     }
   } catch (error) {
-    console.error('Error deleting todo:', error)
+    console.error('Error deleting post:', error)
   }
 }
 
@@ -106,8 +112,8 @@ const deleteTodo = async (id: number) => {
 
 <template>
   <main class="p-4">
-    <div v-if="todos.length === 0" class="text-center text-white">
-      No todo found
+    <div v-if="posts.length === 0" class="text-center text-white">
+      No post found
     </div>
     <div v-else>
       <table class="min-w-full bg-gray-700 border">
@@ -115,37 +121,46 @@ const deleteTodo = async (id: number) => {
           <tr class="bg-gray-500">
             <th class="py-2 px-4 border-b">ID</th>
             <th class="py-2 px-4 border-b">Title</th>
-            <th class="py-2 px-4 border-b">Description</th>
+            <th class="py-2 px-4 border-b">Content</th>
+            <th class="py-2 px-4 border-b">User ID</th>
             <th class="py-2 px-4 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="todo in todos" :key="todo.id" class="hover:bg-gray-600">
-            <td class="py-2 px-4 border-b">{{ todo.id }}</td>
+          <tr v-for="post in posts" :key="post.id" class="hover:bg-gray-600">
+            <td class="py-2 px-4 border-b">{{ post.id }}</td>
             <td class="py-2 px-4 border-b">
-              <div v-if="isEditing === todo.id">
+              <div v-if="isEditing === post.id">
                 <input v-model="editedTitle" class="border p-1" />
               </div>
               <div v-else>
-                {{ todo.title }}
+                {{ post.title }}
               </div>
             </td>
             <td class="py-2 px-4 border-b">
-              <div v-if="isEditing === todo.id">
-                <input v-model="editedDescription" class="border p-1" />
+              <div v-if="isEditing === post.id">
+                <input v-model="editedContent" class="border p-1" />
               </div>
               <div v-else>
-                {{ todo.description }}
+                {{ post.content }}
               </div>
             </td>
             <td class="py-2 px-4 border-b">
-              <div v-if="isEditing === todo.id">
-                <button class="text-green-500 hover:underline mr-2" @click="saveTodo(todo.id)">Save</button>
+              <div v-if="isEditing === post.id">
+                <input v-model="editedUserId" class="border p-1" />
+              </div>
+              <div v-else>
+                {{ post.user_id }}
+              </div>
+            </td>
+            <td class="py-2 px-4 border-b">
+              <div v-if="isEditing === post.id">
+                <button class="text-green-500 hover:underline mr-2" @click="savePost(post.id)">Save</button>
                 <button class="text-gray-500 hover:underline" @click="isEditing = null">Cancel</button>
               </div>
               <div v-else>
-                <button class="text-blue-500 hover:underline mr-2" @click="editTodo(todo.id)">Edit</button>
-                <button class="text-red-500 hover:underline" @click="deleteTodo(todo.id)">Delete</button>
+                <button class="text-blue-500 hover:underline mr-2" @click="editPost(post.id)">Edit</button>
+                <button class="text-red-500 hover:underline" @click="deletePost(post.id)">Delete</button>
               </div>
             </td>
           </tr>
@@ -155,13 +170,14 @@ const deleteTodo = async (id: number) => {
 
     <div v-if="isCreating" class="mt-4">
       <input v-model="newTitle" placeholder="Title" class="border p-1 mr-2" />
-      <input v-model="newDescription" placeholder="Description" class="border p-1 mr-2" />
-      <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600" @click="saveNewTodo">Save</button>
+      <input v-model="newContent" placeholder="Content" class="border p-1 mr-2" />
+      <input v-model="newUserId" placeholder="User ID" class="border p-1 mr-2" />
+      <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600" @click="saveNewPost">Save</button>
       <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
         @click="isCreating = false">Cancel</button>
     </div>
 
-    <button v-else class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="createTodo">Create
-      Todo</button>
+    <button v-else class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="createPost">Create
+      Post</button>
   </main>
 </template>
