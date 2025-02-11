@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-
+import api from '@/apis'
 const users: any = ref([])
 
 const isEditing = ref<number | null>(null)
 const editedName = ref('')
-const editedEmail = ref('')
+const editedPassword = ref('')
 
 const isCreating = ref(false)
 const newName = ref('')
-const newEmail = ref('')
+const newPassword = ref('')
 
 const API_URL = import.meta.env.VITE_API_URL
 
 const fetchUsers = async () => {
   try {
-    const response = await axios.get(`${API_URL}/users/all`)
+    const response = await api.user.getUsers()
     if (response.status === 200) {
       users.value = response.data
       console.log('Users:', users.value)
@@ -34,21 +32,20 @@ onMounted(() => {
   fetchUsers()
 })
 
-
 const editUser = (id: any) => {
   const user = users.value.find((user: any) => user.id === id)
   if (user) {
     isEditing.value = id
-    editedName.value = user.name
-    editedEmail.value = user.email
+    editedName.value = user.username
+    editedPassword.value = '' // Password should be reset for security reasons
   }
 }
 
 const saveUser = async (id: any) => {
   try {
-    const response = await axios.put(`${API_URL}/users/user/${id}`, {
-      name: editedName.value,
-      email: editedEmail.value,
+    const response = await api.user.updateUser({
+      username: editedName.value,
+      password: editedPassword.value,
     })
     if (response.status === 200) {
       alert('User updated successfully')
@@ -66,7 +63,7 @@ const saveUser = async (id: any) => {
 
 const deleteUser = async (id: number) => {
   try {
-    const response = await axios.delete(`${API_URL}/users/user/${id}`)
+    const response = await api.user.deleteUser(id)
     if (response.status === 204) {
       alert('User deleted successfully')
       fetchUsers()
@@ -84,34 +81,35 @@ const deleteUser = async (id: number) => {
       No user found
     </div>
     <div v-else>
-      <table class="min-w-full bg-gray-700 border">
+      <table class="min-w-full bg-gray-700 border border-gray-600">
         <thead>
           <tr class="bg-gray-500">
-            <th class="py-2 px-4 border-b">ID</th>
-            <th class="py-2 px-4 border-b">Name</th>
-            <th class="py-2 px-4 border-b">Actions</th>
+            <th class="py-2 px-4 border-b border-gray-600 text-left">ID</th>
+            <th class="py-2 px-4 border-b border-gray-600 text-left">Username</th>
+            <th class="py-2 px-4 border-b border-gray-600 text-left">Password</th>
+            <th class="py-2 px-4 border-b border-gray-600 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="user in users" :key="user.id" class="hover:bg-gray-600">
-            <td class="py-2 px-4 border-b">{{ user.id }}</td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b border-gray-600 text-left">{{ user.id }}</td>
+            <td class="py-2 px-4 border-b border-gray-600 text-left">
               <div v-if="isEditing === user.id">
                 <input v-model="editedName" class="border p-1" />
               </div>
               <div v-else>
-                {{ user.name }}
+                {{ user.username }}
               </div>
             </td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b border-gray-600 text-left">
               <div v-if="isEditing === user.id">
-                <input v-model="editedEmail" class="border p-1" />
+                <input v-model="editedPassword" type="password" class="border p-1" />
               </div>
               <div v-else>
-                {{ user.email }}
+                ********
               </div>
             </td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b border-gray-600 text-left">
               <div v-if="isEditing === user.id">
                 <button class="text-green-500 hover:underline mr-2" @click="saveUser(user.id)">Save</button>
                 <button class="text-gray-500 hover:underline" @click="isEditing = null">Cancel</button>
@@ -125,6 +123,5 @@ const deleteUser = async (id: number) => {
         </tbody>
       </table>
     </div>
-
   </main>
 </template>

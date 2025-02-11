@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-
+import api from '@/apis'
 const posts: any = ref([])
 
 const isEditing = ref<number | null>(null)
@@ -16,7 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL
 
 const fetchPosts = async () => {
   try {
-    const response = await axios.get(`${API_URL}/posts/all`)
+    const response = await api.post.getPosts()
     if (response.status === 200) {
       posts.value = response.data
       console.log('Posts:', posts.value)
@@ -40,10 +38,17 @@ const createPost = () => {
 
 const saveNewPost = async () => {
   try {
-    const response = await axios.post(`${API_URL}/posts/create`, {
+    const userId = localStorage.getItem('user_id')
+    if (!userId) {
+      alert('User ID not found in local storage')
+      return
+    }
+    const response = await api.post.createPost({
       title: newTitle.value,
       content: newContent.value,
+      user_id: userId
     })
+
     console.log(response)
     if (response.status === 201) {
       alert('Post created successfully')
@@ -72,7 +77,7 @@ const editPost = (id: any) => {
 
 const savePost = async (id: any) => {
   try {
-    const response = await axios.put(`${API_URL}/posts/post/${id}`, {
+    const response = await api.post.updatePost({
       title: editedTitle.value,
       content: editedContent.value,
     })
@@ -92,7 +97,7 @@ const savePost = async (id: any) => {
 
 const deletePost = async (id: number) => {
   try {
-    const response = await axios.delete(`${API_URL}/posts/post/${id}`)
+    const response = await await api.post.deletePost(id)
     if (response.status === 204) {
       alert('Post deleted successfully')
       fetchPosts()
@@ -113,16 +118,16 @@ const deletePost = async (id: number) => {
       <table class="min-w-full bg-gray-700 border">
         <thead>
           <tr class="bg-gray-500">
-            <th class="py-2 px-4 border-b">ID</th>
-            <th class="py-2 px-4 border-b">Title</th>
-            <th class="py-2 px-4 border-b">Content</th>
-            <th class="py-2 px-4 border-b">Actions</th>
+            <th class="py-2 px-4 border-b text-left">ID</th>
+            <th class="py-2 px-4 border-b text-left">Title</th>
+            <th class="py-2 px-4 border-b text-left">Content</th>
+            <th class="py-2 px-4 border-b text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="post in posts" :key="post.id" class="hover:bg-gray-600">
-            <td class="py-2 px-4 border-b">{{ post.id }}</td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b text-left">{{ post.id }}</td>
+            <td class="py-2 px-4 border-b text-left">
               <div v-if="isEditing === post.id">
                 <input v-model="editedTitle" class="border p-1" />
               </div>
@@ -130,7 +135,7 @@ const deletePost = async (id: number) => {
                 {{ post.title }}
               </div>
             </td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b text-left">
               <div v-if="isEditing === post.id">
                 <input v-model="editedContent" class="border p-1" />
               </div>
@@ -138,7 +143,7 @@ const deletePost = async (id: number) => {
                 {{ post.content }}
               </div>
             </td>
-            <td class="py-2 px-4 border-b">
+            <td class="py-2 px-4 border-b text-left">
               <div v-if="isEditing === post.id">
                 <button class="text-green-500 hover:underline mr-2" @click="savePost(post.id)">Save</button>
                 <button class="text-gray-500 hover:underline" @click="isEditing = null">Cancel</button>
