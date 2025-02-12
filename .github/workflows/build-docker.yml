@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 
 on:
   workflow_run:
-    workflows: ['main']
+    workflows: ['kpress-frontend-ci']
     types:
       - completed
 
@@ -28,5 +28,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: ./Dockerfile.dev
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/kpress-app-frontend:latest
+          platforms: linux/amd64,linux/arm64
