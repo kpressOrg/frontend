@@ -1,9 +1,11 @@
 <script setup lang="ts">
-const token = ref(localStorage.getItem('token'))
-const list_of_routers = ref([])
+import { useAuthStore } from '@/stores'
+const list_of_routers = ref<string[]>([])
+const authStore = useAuthStore()
+
 
 watchEffect(() => {
-  list_of_routers.value = token.value ? ['posts', 'todos', 'users'] : ['login', 'register']
+  list_of_routers.value = authStore.isAuthenticated || (localStorage.getItem('is_authenticated') === 'true') ? ['posts', 'todos', 'users'] : ['login', 'register']
 });
 
 </script>

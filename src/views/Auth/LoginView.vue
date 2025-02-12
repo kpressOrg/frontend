@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import api from '@/apis'
-
+import { useAuthStore } from '@/stores'
 const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
+const authStore = useAuthStore()
 
 const login = async () => {
   try {
@@ -18,6 +19,8 @@ const login = async () => {
     localStorage.setItem('username', username.value)
     localStorage.setItem('user_id', response.data.userId)
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('is_authenticated', 'true')
+    authStore.isAuthenticated = true
     // Redirect to posts route
     router.push({ name: 'posts' })
   } catch (error) {

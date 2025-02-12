@@ -6,12 +6,6 @@ const isEditing = ref<number | null>(null)
 const editedName = ref('')
 const editedPassword = ref('')
 
-const isCreating = ref(false)
-const newName = ref('')
-const newPassword = ref('')
-
-const API_URL = import.meta.env.VITE_API_URL
-
 const fetchUsers = async () => {
   try {
     const response = await api.user.getUsers()
@@ -61,7 +55,7 @@ const saveUser = async (id: any) => {
   }
 }
 
-const deleteUser = async (id: number) => {
+const deleteUser = async (id: string) => {
   try {
     const response = await api.user.deleteUser(id)
     if (response.status === 204) {

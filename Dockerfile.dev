@@ -14,5 +14,12 @@ RUN pnpm install --frozen-lockfile
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
 
+# Remove .env file if it exists
+RUN rm -f .env
+
+# Replace .env with .env.dev
+RUN cp .env.dev .env
+
 EXPOSE 5173
+
 CMD [ "pnpm", "dev" ]

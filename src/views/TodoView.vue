@@ -10,8 +10,6 @@ const isCreating = ref(false)
 const newTitle = ref('')
 const newDescription = ref('')
 
-const API_URL = import.meta.env.VITE_API_URL
-
 const fetchTodos = async () => {
   try {
     const response = await api.todo.getTodos()
@@ -97,7 +95,7 @@ const saveTodo = async (id: any) => {
   }
 }
 
-const deleteTodo = async (id: number) => {
+const deleteTodo = async (id: string) => {
   try {
     const response = await api.todo.deleteTodo(id)
     if (response.status === 204) {

@@ -10,8 +10,6 @@ const isCreating = ref(false)
 const newTitle = ref('')
 const newContent = ref('')
 
-const API_URL = import.meta.env.VITE_API_URL
-
 const fetchPosts = async () => {
   try {
     const response = await api.post.getPosts()
@@ -95,7 +93,7 @@ const savePost = async (id: any) => {
   }
 }
 
-const deletePost = async (id: number) => {
+const deletePost = async (id: string) => {
   try {
     const response = await await api.post.deletePost(id)
     if (response.status === 204) {

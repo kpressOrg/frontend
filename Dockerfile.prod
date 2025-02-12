@@ -1,7 +1,7 @@
 FROM node:lts-alpine
 
 # install simple http server for serving static content
-RUN npm install -g pnpm npm-run-all2
+RUN npm install -g pnpm npm-run-all2 http-server
 
 # make the 'app' folder the current working directory
 WORKDIR /app
@@ -14,8 +14,14 @@ RUN pnpm install --frozen-lockfile
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
 
-# build app for production with minification
+# Remove .env file if it exists
+RUN rm -f .env
+
+# Replace .env with .env.dev
+RUN cp .env.dev .env
+
 RUN pnpm build
 
-EXPOSE 4173
-CMD [ "pnpm", "preview" ]
+EXPOSE 8080
+
+CMD [ "http-server", "dist" ]
